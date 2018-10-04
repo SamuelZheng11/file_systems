@@ -65,11 +65,13 @@ class VersionFS(LoggingMixIn, Operations):
 
         dirents = ['.', '..']
         if os.path.isdir(full_path):
-            all_items = os.listdir(full_path)
-            for item in all_items:
-                if re.search('.1', item):
-                    appendable_list = [item]
-                    dirents.extend(appendable_list)
+            all_item_paths = os.listdir(full_path)
+            for item_path in all_item_paths:
+                if re.search('.1', item_path[-2:]):
+                    item_full_path = self._full_path(item_path[:-2])
+                    if os.path.exists(item_full_path):
+                        appendable_list = [item_path[:-2]]
+                        dirents.extend(appendable_list)
         for r in dirents:
             yield r
 
@@ -128,7 +130,7 @@ class VersionFS(LoggingMixIn, Operations):
 
     def open(self, path, flags):
         print '** open:', path, '**'
-        full_path = self._full_path(path + '.1')
+        full_path = self._full_path(path)
         return os.open(full_path, flags)
 
     def create(self, path, mode, fi=None):
@@ -168,9 +170,9 @@ class VersionFS(LoggingMixIn, Operations):
                             shutil.move(formatted_path + str(index), formatted_path + str(index + 1))
             if os.path.exists(formatted_path + '7'):
                 shutil.move(formatted_path + '7', formatted_path + '1')
-                shutil.move(full_path, formatted_path + '1')
+                shutil.copy(full_path, formatted_path + '1')
             else:
-                shutil.move(full_path, formatted_path + '1')
+                shutil.copy(full_path, formatted_path + '1')
         except Exception as e:
             print e
         return os.close(fh)
