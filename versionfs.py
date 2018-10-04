@@ -4,8 +4,11 @@ from __future__ import with_statement
 import logging
 
 import os
+import re
 import sys
 import errno
+import shutil
+import filecmp
 
 from fuse import FUSE, FuseOSError, Operations, LoggingMixIn
 
@@ -62,7 +65,11 @@ class VersionFS(LoggingMixIn, Operations):
 
         dirents = ['.', '..']
         if os.path.isdir(full_path):
-            dirents.extend(os.listdir(full_path))
+            all_items = os.listdir(full_path)
+            for item in all_items:
+                if re.search('.1', item):
+                    appendable_list = [item]
+                    dirents.extend(appendable_list)
         for r in dirents:
             yield r
 
@@ -121,7 +128,7 @@ class VersionFS(LoggingMixIn, Operations):
 
     def open(self, path, flags):
         print '** open:', path, '**'
-        full_path = self._full_path(path)
+        full_path = self._full_path(path + '.1')
         return os.open(full_path, flags)
 
     def create(self, path, mode, fi=None):
@@ -151,6 +158,21 @@ class VersionFS(LoggingMixIn, Operations):
 
     def release(self, path, fh):
         print '** release', path, '**'
+        full_path = self._full_path(path)
+        formatted_path = full_path + '.'
+        try:
+            if os.path.exists(formatted_path + '1'):
+                if not filecmp.cmp(full_path, formatted_path + '1'):
+                    for index in range(6, 0, -1):
+                        if os.path.exists(formatted_path + str(index)):
+                            shutil.move(formatted_path + str(index), formatted_path + str(index + 1))
+            if os.path.exists(formatted_path + '7'):
+                shutil.move(formatted_path + '7', formatted_path + '1')
+                shutil.move(full_path, formatted_path + '1')
+            else:
+                shutil.move(full_path, formatted_path + '1')
+        except Exception as e:
+            print e
         return os.close(fh)
 
     def fsync(self, path, fdatasync, fh):
