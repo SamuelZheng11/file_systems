@@ -5,6 +5,11 @@ import logging
 import os
 import re
 
+# Written by:
+# UPI: szhe560
+# Name: Samuel Zheng
+# UID:634715579
+
 def main():
     os.system("cd " + os.getcwd())
     os.system("rm .versiondir/*")

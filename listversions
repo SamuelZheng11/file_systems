@@ -4,6 +4,11 @@ import os
 import re
 import sys
 
+# Written by:
+# UPI: szhe560
+# Name: Samuel Zheng
+# UID:634715579
+
 def main(file_name):
     target_files = []
     working_path = os.getcwd() + '/' + '.versiondir'

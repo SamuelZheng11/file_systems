@@ -12,6 +12,10 @@ import filecmp
 
 from fuse import FUSE, FuseOSError, Operations, LoggingMixIn
 
+# Modified by:
+# UPI: szhe560
+# Name: Samuel Zheng
+# UID:634715579
 
 class VersionFS(LoggingMixIn, Operations):
     def __init__(self):
